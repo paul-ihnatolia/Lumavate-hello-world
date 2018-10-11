@@ -6,35 +6,36 @@ echo""
 echo "Welcome to the Lumavate WidgetToolkit!"
 echo "--------------------------------------"
 echo ""
-echo "Enter your Widget Image name:"
+echo "Enter your Widget Image name: (default react-express-docker-boilerplate_app)"
 read WIDGET_IMAGENAME
 echo ""
 echo "Enter the widget's port (4200, 5000, etc):"
 read WIDGET_PORT
 echo ""
 
+WIDGET_IMAGENAME="${WIDGET_IMAGENAME:-react-express-docker-boilerplate_app}"
+WIDGET_PORT="${WIDGET_PORT:-8080}"
+
 if [[ $(docker ps -q -f name=thor) ]]; then
 	echo "Stopping Thor...."
 	docker stop thor
 fi
 
-if [[ $(docker ps -q -f name=widget) ]]; then
+if [[ $(docker ps -q -f name=react_widget) ]]; then
 	echo "Stopping Widget...."
-	docker stop widget
+	docker stop react_widget
 fi
 
 echo "Running your Widget Container"
-docker run --rm -d \
-                --volume "$(pwd)"/src:/opt/app/src
+docker run --volume "$(pwd)"/src:/opt/app/src --rm -d \
 				-e "PRIVATE_KEY=LXycaMpw5BzgfhsS4ydNxGzJ36qMnPrQHI8u2x3wQCZCZyGtZ4sOQbkEWnHmVchZEa79a0Y3xK7IKCymSLkugyabbJUGuXfyuoKL" \
 				-e "PUBLIC_KEY=mIhuoMJh0jbA5W4pUUNK" \
-				-e "APP_SETTINGS=./config/dev.cfg" \
 				-e "BASE_URL=http://$DOCKER_IP" \
 				-e "WIDGET_URL_PREFIX=/ic/r/" \
 				-e "PROTO=http://" \
 				-e "API_HOST=https://services-qa.cat.com" \
 				-e "API_KEY=643d6d3967514494b8a2fc547ba21303" \
-				--name=widget \
+				--name=react_widget \
 				-p $WIDGET_PORT:$WIDGET_PORT \
 				$WIDGET_IMAGENAME
 
