@@ -25,6 +25,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Middleware
 app.use(express.static(staticDir))
+app.use(process.env.WIDGET_URL_PREFIX + '/static', express.static(staticDir))
 app.use(cors())
 app.use(morgan('dev'))
 app.use(cookieParser())
@@ -93,7 +94,6 @@ app.get('/:integration_cloud/:widget_type/:instance_id/index.html', async (req, 
   // Add base url to process image
   componentsData.baseUrl = process.env.PROTO + req.host
   // Loads a template.
-  console.log(componentsData);
   const pathToHtml = staticDir + '/index.html'
   const template = fs.readFileSync(pathToHtml, 'utf8')
   // Inserts a rendered react component to the loaded template (server-side rendering).
