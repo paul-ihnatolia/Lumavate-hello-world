@@ -31,16 +31,12 @@ class App extends Component {
 
     return (
       <div className='App'>
-        <Message message={ this.props.componentsData.message } />
-        <h2>Microsite Context Hello</h2>
-        <h3>Activation Data</h3>
-        { this.props.apiContext.activationData }
-        <div className="Token" style={styles.Token}>
-          <h3>TokenData</h3>
-          { tokenData }
-        </div>
-        <WidgetType componentType={ componentType } />
-        <WidgetData widgetData={ widgetData } />
+        <h2>API Context</h2>
+        { JSON.stringify(this.props.apiContext) }
+        <br />
+        <br />
+        <h2>Components Data</h2>
+        { JSON.stringify(this.props.componentsData) }
         <Footer footerText={ this.props.componentsData.footerText } />
       </div>
     )

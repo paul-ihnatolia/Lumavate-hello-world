@@ -10,6 +10,9 @@ import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import { makeRequest } from './utils/makeRequest'
+import { SimpleDbOperator } from './utils'
+
+import axios from 'axios'
 
 const app = express()
 
@@ -37,6 +40,7 @@ app.use(routes())
 app.get('/:integration_cloud/:widget_type/:instance_id/index.html', async (req, res, next) => {
   const jwtToken = req.cookies.pwa_jwt
   app.set('jwtToken', jwtToken)
+
   const requestUrl = '/pwa/v1/widget-instances/' + req.params.instance_id
   let componentsData = {}
   let apiContext = {}
@@ -44,6 +48,29 @@ app.get('/:integration_cloud/:widget_type/:instance_id/index.html', async (req, 
   try {
     const resp = await makeRequest('get', requestUrl, jwtToken, {})
     componentsData = resp.data.payload.data
+    componentsData.additional = {}
+    // Try to store sample data in the DB
+
+    try {
+      let db = new SimpleDbOperator('event-attendees', jwtToken)
+      let serial = await db.getThing()
+      if (serial) {
+        try {
+          let sortedData = await db.getSortedScoreCollection(serial)
+          componentsData.additional.sortedData = sortedData
+        } catch (error) {
+          componentsData.additional.error = error
+          console.log('Error on savescore')
+          console.log(error.response)
+        }
+      } else {
+        componentsData.additional.error = 'Serial is empty'
+        console.log('Serial is empty')
+      }
+    } catch (error) {
+      console.log(error)
+    }
+
   } catch (error) {
     if (error.response) {
       if (error.response.status == 401) {
@@ -59,9 +86,11 @@ app.get('/:integration_cloud/:widget_type/:instance_id/index.html', async (req, 
           instance_id
         ].join('/')
         return res.redirect(url)
-      } else if (error.response.status == 404) {
+        await makeRequest('get', '/pwa/v1/activation', jwtToken, {})
+      } else if (error.response.status === 404) {
         console.log('Instance not found')
       } else {
+        console.log(error.response)
         console.log(`Error getting widget data! status code=${error.response.status}`)
       }
     } else if (error.request) {
